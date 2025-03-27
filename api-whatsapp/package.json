@@ -1,0 +1,19 @@
+{
+  "name": "api-whatsapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.16",
+    "baileys": "^6.7.16",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "fs": "^0.0.1-security",
+    "qrcode-terminal": "^0.12.0",
+    "venom-bot": "^5.3.0"
+  }
+}

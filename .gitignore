@@ -1,0 +1,20 @@
+# Python
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+
+# Node.js
+node_modules/
+auth/
+bot-whatsapp-session/
+
+# Django static/media (se necessário)
+static/
+media/
+
+# VSCode
+.vscode/
+
+# Logs
+*.log

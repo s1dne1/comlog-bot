@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Envio de Mensagem{% endblock %}
+{% block content %}
+  <h2 class="mb-4">Enviar mensagem para motorista</h2>
+  <form method="POST" id="form-envio">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="numero" class="form-label">Número do motorista (com DDD e país):</label>
+      <input type="text" class="form-control" id="numero" name="numero" placeholder="Ex: 5515999999999" required>
+    </div>
+    <div class="mb-3">
+      <label for="mensagem" class="form-label">Mensagem:</label>
+      <textarea class="form-control" id="mensagem" name="mensagem" rows="3" placeholder="Digite a mensagem" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Enviar</button>
+  </form>
+
+  <div id="resultado" class="mt-3"></div>
+
+  <script>
+    const form = document.getElementById('form-envio');
+    const resultado = document.getElementById('resultado');
+  
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+  
+      try {
+        const response = await fetch('/enviar/', {
+          method: 'POST',
+          body: formData
+        });
+  
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro do servidor: ${errorText}`);
+        }
+  
+        const data = await response.json();
+        resultado.innerHTML = `<div class="alert alert-success">${data.status}</div>`;
+        form.reset();
+      } catch (err) {
+        resultado.innerHTML = `<div class="alert alert-danger">Erro ao enviar: ${err.message}</div>`;
+      }
+    });
+  </script>
+  
+{% endblock %}
