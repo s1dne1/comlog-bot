@@ -3,11 +3,50 @@
 <div class="container py-4">
   <h2>🚚 Chegadas de Motoristas</h2>
 
+  <!-- Filtros -->
+  <form method="get" class="row g-3 mb-3">
+    <div class="col-md-2">
+      <input type="date" class="form-control" name="data">
+    </div>
+    <div class="col-md-2">
+      <input type="text" class="form-control" name="numero" placeholder="Número">
+    </div>
+    <div class="col-md-2">
+      <input type="text" class="form-control" name="parceiro" placeholder="Parceiro">
+    </div>
+    <div class="col-md-2">
+      <input type="text" class="form-control" name="motorista" placeholder="Motorista">
+    </div>
+    <div class="col-md-2">
+      <input type="text" class="form-control" name="ordem" placeholder="Ordem de Carga">
+    </div>
+    <div class="col-md-2">
+      <select class="form-select" name="status">
+        <option value="">Status</option>
+        <option value="agendado">Agendado</option>
+        <option value="chegou">Chegou</option>
+        <option value="carregando">Carregando</option>
+        <option value="finalizado">Finalizado</option>
+      </select>
+    </div>
+    <div class="col-md-12">
+      <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+      <button type="button" class="btn btn-secondary" onclick="location.href='?';">🔄 Limpar</button>
+      <button type="button" class="btn btn-warning" onclick="atualizarStatusLote()">🔄 Atualizar Status</button>
+      <button type="button" class="btn btn-success" onclick="abrirModalGeral()">📢 Comunicado Geral</button>
+    </div>
+  </form>
+
   {% if chegadas %}
-    <table class="table table-striped mt-3">
+    <table class="table table-striped mt-3" id="tabela-chegadas">
       <thead>
         <tr>
+          <th><input type="checkbox" id="checkAll"></th>
           <th>Número</th>
+          <th>Motorista</th>
+          <th>Parceiro</th>
+          <th>Ordem</th>
+          <th>Status</th>
           <th>Data/Hora</th>
           <th>Localização</th>
           <th>Ações</th>
@@ -16,11 +55,17 @@
       <tbody>
         {% for chegada in chegadas %}
         <tr>
+          <td><input type="checkbox" class="check-row" value="{{ chegada.numero }}"></td>
           <td>{{ chegada.numero }}</td>
+          <td>{{ chegada.motorista }}</td>
+          <td>{{ chegada.parceiro }}</td>
+          <td>{{ chegada.ordem_carregamento }}</td>
+          <td>{{ chegada.status }}</td>
           <td>{{ chegada.confirmado_em|date:"d/m/Y H:i" }}</td>
           <td>{{ chegada.latitude }}, {{ chegada.longitude }}</td>
           <td>
-            <a href="https://www.google.com/maps/search/?api=1&query={{ chegada.latitude }},{{ chegada.longitude }}" target="_blank" class="btn btn-sm btn-outline-primary">🗺️ Ver no mapa</a>
+            <a href="https://www.google.com/maps/search/?api=1&query={{ chegada.latitude }},{{ chegada.longitude }}" target="_blank" class="btn btn-sm btn-outline-primary">🗺️ Mapa</a>
+            <button class="btn btn-sm btn-outline-success" onclick="abrirModalMsg('{{ chegada.numero }}')">💬 Enviar</button>
           </td>
         </tr>
         {% endfor %}
@@ -32,4 +77,68 @@
 
   <a href="{% url 'painel:index' %}" class="btn btn-secondary mt-3">⬅️ Voltar ao painel</a>
 </div>
+
+<!-- Modal de envio de mensagem -->
+<div class="modal fade" id="modalMsg" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Enviar mensagem</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-msg">
+          <input type="hidden" name="numero" id="numero-msg">
+          <div class="mb-3">
+            <label for="mensagem" class="form-label">Mensagem</label>
+            <textarea class="form-control" name="mensagem" id="mensagem" rows="4"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">📤 Enviar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirModalMsg(numero) {
+  document.getElementById("numero-msg").value = numero;
+  document.getElementById("mensagem").value = "";
+  new bootstrap.Modal(document.getElementById("modalMsg")).show();
+}
+
+document.getElementById("form-msg").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const numero = document.getElementById("numero-msg").value;
+  const mensagem = document.getElementById("mensagem").value;
+
+  const resp = await fetch("http://127.0.0.1:3000/enviar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ numero, mensagem })
+  });
+
+  alert(resp.ok ? "Mensagem enviada com sucesso." : "Erro ao enviar mensagem.");
+  bootstrap.Modal.getInstance(document.getElementById("modalMsg")).hide();
+});
+
+function abrirModalGeral() {
+  const selecionados = Array.from(document.querySelectorAll(".check-row:checked"))
+                            .map(c => c.value);
+  if (selecionados.length === 0) {
+    alert("Selecione ao menos um motorista.");
+    return;
+  }
+  abrirModalMsg(selecionados.join(", "));
+}
+
+function atualizarStatusLote() {
+  alert("🔄 Função de atualização de status em lote em desenvolvimento.");
+}
+
+document.getElementById("checkAll").addEventListener("change", function() {
+  const checkboxes = document.querySelectorAll(".check-row");
+  checkboxes.forEach(c => c.checked = this.checked);
+});
+</script>
 {% endblock %}

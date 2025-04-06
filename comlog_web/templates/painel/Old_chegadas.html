@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h2>🚚 Chegadas de Motoristas</h2>
+
+  <!-- Filtros -->
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+      <label class="form-label">Data:</label>
+      <input type="date" name="data" class="form-control" value="{{ request.GET.data }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Número:</label>
+      <input type="text" name="numero" class="form-control" placeholder="Ex: 55159999..." value="{{ request.GET.numero }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Parceiro:</label>
+      <input type="text" name="parceiro" class="form-control" placeholder="Nome do parceiro" value="{{ request.GET.parceiro }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Ordem Carregamento:</label>
+      <input type="text" name="ordem" class="form-control" placeholder="ID da ordem" value="{{ request.GET.ordem }}">
+    </div>
+    <div class="col-12 d-flex justify-content-end mt-2">
+      <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+    </div>
+  </form>
+
+  {% if chegadas %}
+    <table class="table table-bordered table-striped">
+      <thead class="table-light">
+        <tr>
+          <th>Número</th>
+          <th>Data/Hora</th>
+          <th>Localização</th>
+          <th>Ordem</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for chegada in chegadas %}
+        <tr>
+          <td>{{ chegada.numero }}</td>
+          <td>{{ chegada.confirmado_em|date:"d/m/Y H:i" }}</td>
+          <td>{{ chegada.latitude }}, {{ chegada.longitude }}</td>
+          <td>{{ chegada.ordem_carregamento }}</td>
+          <td>
+            <a href="https://www.google.com/maps/search/?api=1&query={{ chegada.latitude }},{{ chegada.longitude }}" target="_blank" class="btn btn-sm btn-outline-primary">🗺️ Mapa</a>
+            <a href="https://wa.me/{{ chegada.numero|slice:':-5' }}" target="_blank" class="btn btn-sm btn-outline-success">💬 WhatsApp</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Lazy load (paginação básica) -->
+    {% if page_obj.has_previous or page_obj.has_next %}
+      <nav class="mt-3">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ request.GET.urlencode|cut:'page='|yesno:'&' }}" aria-label="Anterior">⬅️</a>
+            </li>
+          {% endif %}
+          <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{{ request.GET.urlencode|cut:'page='|yesno:'&' }}" aria-label="Próximo">➡️</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-info">Nenhuma chegada registrada com os filtros aplicados.</div>
+  {% endif %}
+
+  <a href="{% url 'painel:index' %}" class="btn btn-secondary mt-3">⬅️ Voltar ao painel</a>
+</div>
+{% endblock %}

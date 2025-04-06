@@ -76,9 +76,12 @@ def resposta_automatica(request):
     resposta = RespostaAutomatica.objects.filter(palavra_chave__iexact=termo).first()
 
     if resposta:
-        return JsonResponse({'resposta': resposta.resposta})
+        contexto = resposta.id_exemplo
+        return JsonResponse({'resposta': resposta.resposta,
+                             'contexto':contexto})
     else:
-        return JsonResponse({'resposta': '🤖 Nenhuma resposta automática encontrada.'})
+        return JsonResponse({'resposta': '🤖 Nenhuma resposta automática encontrada.',
+                             'contexto':contexto})
 
 
 # =============================================================================
@@ -147,7 +150,8 @@ def resposta_agendamento(request, age_id):
             return JsonResponse({'erro': 'Modelo de resposta não encontrado'}, status=404)
 
         # Consulta os dados de status do agendamento (Consumo da API do Carga Pontual)
-        dados = consultar_status_agendamento(config, age_id)
+        if age_id:
+            dados = consultar_status_agendamento(config, age_id)
 
         # 🧠 Aplica substituição de variáveis usando o template do Django
         template = Template(modelo.resposta)
@@ -331,7 +335,7 @@ def confirmar_chegada(request):
             except Exception as e:
                 return JsonResponse({"erro": f"Erro ao atualizar status na Carga Pontual: {str(e)}"}, status=500)
 
-        return JsonResponse({"status": "Chegada registrada e status atualizado com sucesso."})
+        return JsonResponse({"status": "✅ Chegada registrada e status atualizado com sucesso."})
 
     except Exception as e:
         return JsonResponse({"erro": str(e)}, status=500)
@@ -342,7 +346,7 @@ from core.models import ChegadaMotorista
 
 def chegadas(request):
     chegadas = ChegadaMotorista.objects.all().order_by('-confirmado_em')
-    return render(request, 'painel_chegadas.html', {'chegadas': chegadas})
+    return render(request, 'painel\chegadas.html', {'chegadas': chegadas})
    
 
 
