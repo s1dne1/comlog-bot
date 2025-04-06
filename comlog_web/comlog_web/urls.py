@@ -17,7 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # ← adiciona o app core aqui
+
+ # 👇 Adicione isso:
+    path('painel/', include('painel.urls')),
+    
+
+
+
+
 ]

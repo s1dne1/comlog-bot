@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h2>🔍 Variáveis da Requisição #{{ requisicao.id }}</h2>
+  <p><strong>Nome:</strong> {{ requisicao.nome }}</p>
+
+  <h5 class="mt-4">Variáveis Capturadas:</h5>
+  <ul class="list-group">
+    {% for chave, valor in variaveis.items %}
+      <li class="list-group-item">
+        <code>{{ chave }}</code>: {{ valor }}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <a href="{% url 'painel:requisicao_list' %}" class="btn btn-outline-secondary mt-4">⬅️ Voltar para Requisições</a>
+</div>
+{% endblock %}

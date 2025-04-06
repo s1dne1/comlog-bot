@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h2>🚚 Chegadas de Motoristas</h2>
+
+  {% if chegadas %}
+    <table class="table table-striped mt-3">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Data/Hora</th>
+          <th>Localização</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for chegada in chegadas %}
+        <tr>
+          <td>{{ chegada.numero }}</td>
+          <td>{{ chegada.confirmado_em|date:"d/m/Y H:i" }}</td>
+          <td>{{ chegada.latitude }}, {{ chegada.longitude }}</td>
+          <td>
+            <a href="https://www.google.com/maps/search/?api=1&query={{ chegada.latitude }},{{ chegada.longitude }}" target="_blank" class="btn btn-sm btn-outline-primary">🗺️ Ver no mapa</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info">Nenhuma chegada registrada ainda.</div>
+  {% endif %}
+
+  <a href="{% url 'painel:index' %}" class="btn btn-secondary mt-3">⬅️ Voltar ao painel</a>
+</div>
+{% endblock %}

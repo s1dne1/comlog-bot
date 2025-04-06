@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">{{ requisicao.id|default:"➕ Nova" }} Requisição de API</h4>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="d-flex justify-content-between mt-4">
+          <a href="{% url 'painel:requisicao_list' %}" class="btn btn-outline-secondary">⬅️ Voltar</a>
+          <button type="submit" class="btn btn-success">💾 Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

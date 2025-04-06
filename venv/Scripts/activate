@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\13518\Desktop\temp\Pessoal\Faculdade\PI\P_III\projeto\Sistema ComLog\venv"
+VIRTUAL_ENV="C:\Users\13518\Desktop\temp\Pessoal\Faculdade\PI\P_III\Projeto\Sistema_ComLog\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

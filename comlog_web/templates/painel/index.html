@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h2>⚙️ Painel de Administração</h2>
+  <hr>
+  <div class="row g-4">
+    
+    <!-- Regras -->
+    <div class="col-md-4">
+      <div class="card shadow">
+        <div class="card-body text-center">
+          <h5 class="card-title">📜 Regras Automáticas</h5>
+          <p class="card-text">Gerencie suas regras automáticas.</p>
+          <a href="{% url 'painel:tela_regras' %}" class="btn btn-primary">Visualizar Regras</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fontes API -->
+    <div class="col-md-4">
+      <div class="card shadow">
+        <div class="card-body text-center">
+          <h5 class="card-title">🌐 Fontes de Dados (API)</h5>
+          <p class="card-text">Cadastre e gerencie suas fontes de dados.</p>
+          <a href="{% url 'painel:fonte_api_list' %}" class="btn btn-primary">Gerenciar Fontes</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Requisições -->
+    <div class="col-md-4">
+      <div class="card shadow">
+        <div class="card-body text-center">
+          <h5 class="card-title">📡 Requisições</h5>
+          <p class="card-text">Configure requisições para APIs externas.</p>
+          <a href="{% url 'painel:requisicao_list' %}" class="btn btn-primary">Gerenciar Requisições</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Adicione mais módulos aqui -->
+  
+</div>
+{% endblock %}
