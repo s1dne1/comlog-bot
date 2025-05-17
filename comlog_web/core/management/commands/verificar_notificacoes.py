@@ -3,6 +3,8 @@ from django.core.management.base import BaseCommand
 from core.models import InscricaoNotificacao, IntegracaoCargaPontual
 from core.views import consultar_status_agendamento
 import requests
+from time import sleep
+from datetime import date
 
 class Command(BaseCommand):
     help = 'Verifica status de agendamentos e notifica motoristas se houver mudança'
@@ -10,7 +12,11 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         print("\n🔍 Iniciando verificação de notificações...")
 
-        inscricoes = InscricaoNotificacao.objects.filter(ativo=True)
+        hoje = date.today()
+
+
+        inscricoes = InscricaoNotificacao.objects.filter(ativo=True,
+                                                         data_inscricao__date = hoje)
         config = IntegracaoCargaPontual.objects.first()
 
         if not config:
@@ -56,3 +62,5 @@ class Command(BaseCommand):
 
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"❌ Erro com agendamento {insc.agendamento_id}: {str(e)}"))
+
+        sleep(20)  # <-- AQUI você controla o tempo (em segundos)     

@@ -20,8 +20,10 @@ urlpatterns = [
     path("api/mensagem/", views.processar_mensagem),
     path('api/regras-automatizadas/', views.listar_regras, name='listar_regras'),
     path('api/inscrever-notificacao/', views.inscrever_notificacao),
-    path('chegadas/', views.chegadas, name='chegadas'),
     path('api/confirmar-chegada/', views.confirmar_chegada, name='confirmar_chegada'),
+    path("api/ultimo-status/", views.ultimo_status, name="ultimo_status"),
+    path("sincronizar-chegadas/", views.sincronizar_chegadas_api, name="sincronizar_chegadas"),
+
 
 
 

@@ -28,34 +28,65 @@ def home(request):
     return render(request, 'core/home.html')
 
 
+import json
+import requests
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_http_methods
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
 def envio(request):
     """
-    Gerencia o envio de mensagens via formulário.
-    Se o método for POST, envia a mensagem para o bot através de uma requisição HTTP;
-    caso contrário, renderiza o formulário de envio.
+    Se GET: renderiza o form.
+    Se POST: recebe JSON ou form-data com:
+      - numero (string) ou numeros (lista de strings)
+      - mensagem (string)
+    Envia cada mensagem ao bot Node em http://localhost:3000/enviar
+    e retorna um JSON com o status de cada número.
     """
     if request.method == 'POST':
-        # Recupera os dados do formulário
-        numero = request.POST.get('numero')
-        mensagem = request.POST.get('mensagem')
+        # 1) Detecta JSON ou form-data
+        if request.content_type.startswith('application/json'):
+            try:
+                payload = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'JSON inválido'}, status=400)
+            numeros = payload.get('numeros') or [payload.get('numero')]
+            mensagem = payload.get('mensagem')
+        else:
+            # form-encoded ou multipart/form-data
+            numeros = request.POST.getlist('numeros') or [request.POST.get('numero')]
+            mensagem = request.POST.get('mensagem')
 
-        try:
-            # Realiza uma chamada POST para o endpoint do bot para envio da mensagem
-            response = requests.post(
-                'http://localhost:3000/enviar',
-                json={'numero': numero, 'mensagem': mensagem},
-                timeout=5  # Define timeout de 5 segundos
-            )
-            if response.status_code == 200:
-                return JsonResponse({'status': 'Mensagem enviada com sucesso!'})
-            else:
-                # Retorna erro com o conteúdo da resposta em caso de falha
-                return JsonResponse({'status': 'Erro ao enviar a mensagem.', 'erro': response.text}, status=500)
-        except Exception as e:
-            # Em caso de exceção, retorna erro na conexão com o bot
-            return JsonResponse({'status': 'Erro na conexão com o bot.', 'erro': str(e)}, status=500)
+        # 2) Valida dados mínimos
+        if not mensagem or not numeros or any(n is None for n in numeros):
+            return JsonResponse({'error': 'Campos "numero(s)" e "mensagem" são obrigatórios.'}, status=400)
 
-    # Renderiza o template de envio se não for POST
+        resultados = []
+        for numero in numeros:
+            try:
+                resp = requests.post(
+                    'http://localhost:3000/enviar',
+                    json={'numero': numero, 'mensagem': mensagem},
+                    timeout=5
+                )
+                if resp.status_code == 200:
+                    resultados.append({'numero': numero, 'status': 'ok'})
+                else:
+                    resultados.append({
+                        'numero': numero,
+                        'status': 'erro',
+                        'http_code': resp.status_code,
+                        'detail': resp.text
+                    })
+            except Exception as e:
+                resultados.append({'numero': numero, 'status': 'exception', 'detail': str(e)})
+
+        return JsonResponse({'resultados': resultados})
+
+    # GET
     return render(request, 'core/envio.html')
 
 
@@ -304,50 +335,205 @@ from datetime import datetime
 from core.utils import motorista_avisa_que_chegou
 
 
+# @csrf_exempt
+# def confirmar_chegada_antiga(request):
+#     if request.method != "POST":
+#         return JsonResponse({"erro": "Método não permitido."}, status=405)
+
+#     try:
+#         data = json.loads(request.body)
+#         numero = data.get("numero")
+#         lat = data.get("latitude")
+#         lng = data.get("longitude")
+#         ordem = data.get("ordem_carregamento")
+       
+
+#         if not numero or lat is None or lng is None or not ordem:
+#             return JsonResponse({"erro": "Campos obrigatórios: numero, latitude, longitude, ordem_carregamento"}, status=400)
+        
+        
+
+
+
+
+#         # Atualizar status via integração Carga Pontual
+#         config = IntegracaoCargaPontual.objects.first()
+#         if config:
+#             try:
+
+#                 dadosagend = consultar_status_agendamento(config,ordem)
+
+#                 # Registrar no banco
+#                 ChegadaMotorista.objects.create(
+#                     numero=numero,
+#                     latitude=lat,
+#                     longitude=lng,
+#                     ordem_carregamento=ordem,
+#                     # status_ordem_atual= dadosagend.get("status"),
+#                     status_ordem_atual= '2 | CHEGOU NA PLANTA',
+#                     tipo = dadosagend.get("age_tipooperacao"),
+#                     parceiro = dadosagend.get("nomeparceiro"),
+#                     transportadora = dadosagend.get("nometransportador"),
+#                     periodo = dadosagend.get("periodoinicialfinal"),
+#                     motorista = dadosagend.get("nomemotorista")
+#                 )
+
+
+
+#                 resultado = motorista_avisa_que_chegou(config, ordem)
+#             except Exception as e:
+#                 return JsonResponse({"erro": f"Erro ao atualizar status na Carga Pontual: {str(e)}"}, status=500)
+
+#         return JsonResponse({"status": "✅ Chegada registrada e status atualizado com sucesso."})
+
+#     except Exception as e:
+#         return JsonResponse({"erro": str(e)}, status=500)
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+from .models import ChegadaMotorista, IntegracaoCargaPontual
+from .utils import consultar_status_agendamento, motorista_avisa_que_chegou
+
 @csrf_exempt
 def confirmar_chegada(request):
     if request.method != "POST":
-        return JsonResponse({"erro": "Método não permitido."}, status=405)
+        return JsonResponse({"erro": "Método não permitido. Use POST."}, status=405)
 
     try:
         data = json.loads(request.body)
         numero = data.get("numero")
-        lat = data.get("latitude")
-        lng = data.get("longitude")
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
         ordem = data.get("ordem_carregamento")
 
-        if not numero or lat is None or lng is None or not ordem:
-            return JsonResponse({"erro": "Campos obrigatórios: numero, latitude, longitude, ordem_carregamento"}, status=400)
+        # Verifica campos obrigatórios
+        if not all([numero, latitude is not None, longitude is not None, ordem]):
+            return JsonResponse({
+                "erro": "Campos obrigatórios: numero, latitude, longitude, ordem_carregamento"
+            }, status=400)
 
-        # Registrar no banco
-        ChegadaMotorista.objects.create(
-            numero=numero,
-            latitude=lat,
-            longitude=lng,
-            ordem_carregamento=ordem
-        )
-
-        # Atualizar status via integração Carga Pontual
+        # Verifica se há configuração
         config = IntegracaoCargaPontual.objects.first()
-        if config:
-            try:
-                resultado = motorista_avisa_que_chegou(config, ordem)
-            except Exception as e:
-                return JsonResponse({"erro": f"Erro ao atualizar status na Carga Pontual: {str(e)}"}, status=500)
+        if not config:
+            return JsonResponse({"erro": "Configuração de integração não encontrada."}, status=500)
 
-        return JsonResponse({"status": "✅ Chegada registrada e status atualizado com sucesso."})
+        # Busca chegada
+        chegada = ChegadaMotorista.objects.filter(ordem_carregamento=ordem).first()
+        if not chegada:
+            return JsonResponse({"erro": f"Registro com número '{ordem}' não encontrado."}, status=404)
 
+        # Atualiza dados da chegada
+        chegada.numero = numero
+        chegada.latitude = latitude
+        chegada.longitude = longitude
+        chegada.status_ordem_atual = "2 | CHEGOU NA PLANTA"
+        chegada.chegou = True
+        chegada.save()
+
+        # Notifica via integração
+        resultado = motorista_avisa_que_chegou(config, ordem)
+
+        return JsonResponse({
+            "status": "✅ Chegada confirmada e status atualizado.",
+            "Numero": numero,
+            "status_ordem": chegada.status_ordem_atual,
+            "latitude": latitude,
+            "longitude": longitude,
+            "resultado_integracao": resultado
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({"erro": "JSON inválido."}, status=400)
+    except Exception as e:
+        return JsonResponse({"erro": f"Erro interno: {str(e)}"}, status=500)
+
+
+
+
+from django.contrib import messages
+from django.shortcuts import redirect
+from .models import ChegadaMotorista  # ajuste se o nome do model for diferente
+from .utils import consultar_agendamentos_geral
+from datetime import date
+
+
+from django.db.models import Q
+
+def sincronizar_chegadas_api(request):
+    config = IntegracaoCargaPontual.objects.first()
+    data = request.GET.get("data") #or date.today().isoformat()
+
+    try:
+        dados_api = consultar_agendamentos_geral(config, data)
+
+        for item in dados_api:
+            if not isinstance(item, dict):
+                continue
+
+            ordem_carregamento = item.get("age_id")
+
+            # Verifica se já existe
+            chegada, created = ChegadaMotorista.objects.update_or_create(
+                ordem_carregamento=ordem_carregamento,
+                defaults={
+                    "periodo": item.get("periodoinicialfinal"),
+                    "motorista": item.get("nomemotorista"),
+                    "parceiro": item.get("nomeparceiro"),
+                    "numero": item.get("numero"),
+                    "status_ordem_atual": item.get("status"),
+                    "tipo": item.get("age_tipooperacao"),
+                    "confirmado_em": data,
+                },
+            )
+
+            # Só atualiza latitude/longitude se já existe ou se os dados estiverem presentes
+            latitude = item.get("latitude")
+            longitude = item.get("longitude")
+
+            if latitude is not None and longitude is not None:
+                chegada.latitude = latitude
+                chegada.longitude = longitude
+                chegada.save()
+
+        messages.success(request, "✅ Chegadas atualizadas com sucesso.")
+    except Exception as e:
+        messages.error(request, f"❌ Erro ao sincronizar dados: {e}")
+    
+    return redirect("painel:chegadas")
+
+
+
+
+
+   
+# core/views.py
+from django.http import JsonResponse
+from core.models import IntegracaoCargaPontual, ChegadaMotorista
+
+
+def ultimo_status(request):
+    ordem = request.GET.get("numero")
+    if not ordem:
+        return JsonResponse({"erro": "Número não fornecido"}, status=400)
+
+    try:
+        # Consulta o status atual via API externa
+        config = IntegracaoCargaPontual.objects.first()
+        dados = consultar_status_agendamento(config, ordem)
+        status = dados.get("status")
+
+        if not status:
+            return JsonResponse({"erro": "Status não encontrado na resposta"}, status=404)
+
+        # Atualiza o campo status_ordem_atual no último registro do número
+        ChegadaMotorista.objects.filter(ordem_carregamento=ordem).update(status_ordem_atual = status)
+     
+
+        return JsonResponse({"status": status})
+    
     except Exception as e:
         return JsonResponse({"erro": str(e)}, status=500)
 
-    
-
-from core.models import ChegadaMotorista
-
-def chegadas(request):
-    chegadas = ChegadaMotorista.objects.all().order_by('-confirmado_em')
-    return render(request, 'painel\chegadas.html', {'chegadas': chegadas})
-   
 
 
 
@@ -471,5 +657,31 @@ def listar_regras(request):
             'requisicao': regra.requisicao.nome if regra.requisicao else None
         })
     return JsonResponse({'regras': lista})
+
+
+
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('painel:index')  # redireciona para o painel ou home
+        else:
+            messages.error(request, "Usuário ou senha inválidos.")
+    
+    return render(request, 'login.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+    
+
 
 

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>📋 Menus Cadastrados</h2>
+    <div>
+      <a href="{% url 'painel:novo_menu' %}" class="btn btn-success">➕ Novo Menu</a>
+      <a href="{% url 'painel:index' %}" class="btn btn-outline-secondary">⬅️ Voltar ao Painel</a>
+    </div>
+  </div>
+
+  {% if menus %}
+    <table class="table table-striped table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>ID Menu</th>
+          <th>Texto</th>
+          <th>Opção</th>
+          <th>Destino</th>
+          <th>Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for menu in menus %}
+        <tr>
+          <td>{{ menu.id }}</td>
+          <td>{{ menu.id_menu }}</td>
+          <td style="max-width:250px; white-space:normal; word-break:break-word;">{{ menu.texto|linebreaksbr  }}</td>
+          <td>{{ menu.opcao_usuario|default:"-" }}</td>
+          <td>{{ menu.proximo|default:"-" }}</td>
+          <td>
+            {% if menu.ativo %}
+              <span class="badge bg-success">Ativo ✅</span>
+            {% else %}
+              <span class="badge bg-danger">Inativo ❌</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            <a href="{% url 'painel:editar_menu' menu.id %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+            <a href="{% url 'painel:excluir_menu' menu.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Deseja realmente excluir este menu?');">🗑️ Excluir</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info">Nenhum menu cadastrado ainda. Clique em <strong>Novo Menu</strong> para começar!</div>
+  {% endif %}
+
+ 
+</div>
+{% endblock %}

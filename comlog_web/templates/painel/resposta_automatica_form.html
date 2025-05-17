@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow border-0">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">
+        {% if resposta_automatica %}
+          ✏️ Editar Resposta: <strong>{{ resposta_automatica.palavra_chave }}</strong>
+        {% else %}
+          ➕ Nova Resposta Automática
+        {% endif %}
+      </h4>
+    </div>
+    <div class="card-body">
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-md-6">
+          <label class="form-label">{{ form.palavra_chave.label }}</label>
+          {{ form.palavra_chave }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ form.pergunta_sequencial.label }}</label>
+          {{ form.pergunta_sequencial }}
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">{{ form.resposta.label }}</label>
+          {{ form.resposta }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ form.variaveis_disponiveis.label }}</label>
+          {{ form.variaveis_disponiveis }}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">{{ form.id_exemplo.label }}</label>
+          {{ form.id_exemplo }}
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end">
+          <div class="form-check">
+            {{ form.ativo }} {{ form.ativo.label_tag }}
+          </div>
+        </div>
+
+        <div class="col-12 d-flex justify-content-between mt-3">
+          <a href="{% url 'painel:resposta_automatica_list' %}" class="btn btn-outline-secondary">⬅️ Voltar</a>
+          <button type="submit" class="btn btn-success">💾 Salvar Resposta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -134,14 +134,23 @@ class InscricaoNotificacao(models.Model):
         verbose_name = "Inscrição de Notificação"
         verbose_name_plural = "Inscrições de Notificação"
     
-
+from django.utils import timezone
 
 class ChegadaMotorista(models.Model):
-    numero = models.CharField(max_length=30)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    confirmado_em = models.DateTimeField(auto_now_add=True)
-    ordem_carregamento = models.CharField(max_length=30)  
-
+    numero = models.CharField(max_length=30,null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6,null=True, blank=True)
+    confirmado_em = models.DateTimeField(default=timezone.now)
+    ordem_carregamento = models.CharField(max_length=30) 
+    status_ordem = models.CharField(max_length=100, blank=True, null=True)
+    status_ordem_atual = models.CharField(max_length=100, blank=True, null=True) 
+    motorista = models.CharField(max_length=100, blank=True, null=True)  
+    parceiro = models.CharField(max_length=100, blank=True, null=True)
+    tipo =  models.CharField(max_length=100, blank=True, null=True)
+    transportadora = models.CharField(max_length=100, blank=True, null=True)  
+    periodo = models.CharField(max_length=100, blank=True, null=True)  
+    chegou = models.BooleanField(default=False)
+    
     def __str__(self):
-        return f"{self.numero} - {self.confirmado_em.strftime('%d/%m/%Y %H:%M')}"
+        return f"{self.ordem_carregamento} - {self.confirmado_em.strftime('%d/%m/%Y %H:%M')}"
+

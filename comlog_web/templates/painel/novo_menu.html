@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow border-0">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">
+        {% if form.instance.id %}
+          ✏️ Editar Menu: <strong>{{ form.instance.id_menu }}</strong>
+        {% else %}
+          ➕ Novo Menu
+        {% endif %}
+      </h4>
+    </div>
+    <div class="card-body">
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-md-4">
+          <label class="form-label">{{ form.id_menu.label }}</label>
+          {{ form.id_menu }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">{{ form.opcao_usuario.label }}</label>
+          {{ form.opcao_usuario }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">{{ form.proximo.label }}</label>
+          {{ form.proximo }}
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">{{ form.texto.label }}</label>
+          {{ form.texto }}
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+          <div class="form-check">
+            {{ form.ativo }} {{ form.ativo.label_tag }}
+          </div>
+        </div>
+
+        <div class="col-12 d-flex justify-content-between mt-3">
+          <a href="{% url 'painel:tela_menu' %}" class="btn btn-outline-secondary">⬅️ Cancelar</a>
+          <button type="submit" class="btn btn-success">💾 Salvar Menu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

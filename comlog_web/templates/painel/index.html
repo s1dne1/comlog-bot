@@ -10,9 +10,9 @@
     <div class="col-md-4">
       <div class="card shadow">
         <div class="card-body text-center">
-          <h5 class="card-title">📜 Regras Automáticas</h5>
+          <h5 class="card-title">📜 Cadastro Menus</h5>
           <p class="card-text">Gerencie suas regras automáticas.</p>
-          <a href="{% url 'painel:tela_regras' %}" class="btn btn-primary">Visualizar Regras</a>
+          <a href="{% url 'painel:tela_menu' %}" class="btn btn-primary">Visualizar Regras</a>
         </div>
       </div>
     </div>
@@ -21,9 +21,9 @@
     <div class="col-md-4">
       <div class="card shadow">
         <div class="card-body text-center">
-          <h5 class="card-title">🌐 Fontes de Dados (API)</h5>
-          <p class="card-text">Cadastre e gerencie suas fontes de dados.</p>
-          <a href="{% url 'painel:fonte_api_list' %}" class="btn btn-primary">Gerenciar Fontes</a>
+          <h5 class="card-title">🌐 Respostas Automáticas</h5>
+          <p class="card-text">Cadastre e gerencie suas repostas automáticas.</p>
+          <a href="{% url 'painel:resposta_automatica_list' %}" class="btn btn-primary">Gerenciar Respostas</a>
         </div>
       </div>
     </div>
@@ -35,6 +35,17 @@
           <h5 class="card-title">📡 Requisições</h5>
           <p class="card-text">Configure requisições para APIs externas.</p>
           <a href="{% url 'painel:requisicao_list' %}" class="btn btn-primary">Gerenciar Requisições</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista Chegada de motorista  -->
+    <div class="col-md-4">
+      <div class="card shadow">
+        <div class="card-body text-center">
+          <h5 class="card-title">🚚 Agenda Motoristas</h5>
+          <p class="card-text">Monitoramento e comunicação com Motorista.</p>
+          <a href="{% url 'painel:chegadas' %}" class="btn btn-primary">Gerenciar Chegadas</a>
         </div>
       </div>
     </div>

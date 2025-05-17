@@ -2,21 +2,70 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" name="csrf-token" content="{{ csrf_token }}">
   <title>{% block title %}Sistema ComLog{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
+
 <body>
-  <nav class="navbar navbar-dark bg-dark">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Sistema ComLog</a>
+      <a class="navbar-brand" href="{% url 'painel:index' %}">Sistema ComLog</a>
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        {% if request.user.is_authenticated %}
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'painel:chegadas' %}">🚚 painel</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'painel:tela_menu' %}">📋 Menus</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'painel:resposta_automatica_list' %}">💬 Respostas</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                ⚙️ {{ request.user.username }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'logout' %}">🚪 Logout</a></li>
+              </ul>
+            </li>
+          </ul>
+        {% else %}
+          <a class="btn btn-outline-light" href="{% url 'login' %}">🔐 Login</a>
+        {% endif %}
+      </div>
     </div>
   </nav>
 
-  <div class="container mt-4">
+  <!-- BREADCRUMB -->
+  <div class="container mt-3">
+    {% if breadcrumbs %}
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          {% for crumb in breadcrumbs %}
+            {% if forloop.last %}
+              <li class="breadcrumb-item active" aria-current="page">{{ crumb.title }}</li>
+            {% else %}
+              <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.title }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ol>
+      </nav>
+    {% endif %}
+    
     {% block content %}
     {% endblock %}
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>

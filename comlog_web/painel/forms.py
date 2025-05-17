@@ -1,35 +1,43 @@
 # painel/forms.py
 from django import forms
-from core.models import RegraAutomatica
-from core.models import FonteDeDados
+from core.models import MenuBot
+from core.models import RespostaAutomatica
 
-class RegraAutomaticaForm(forms.ModelForm):
+class MenuBotForm(forms.ModelForm):
     class Meta:
-        model = RegraAutomatica
+        model = MenuBot
         fields = [
-            'texto_usuario',
-            'tipo_comparacao',
-            'contexto',
-            'requisicao',
-            'novo_contexto',
-            'ordem',
+            'id_menu',
+            'texto',
+            'opcao_usuario',
+            'proximo',
+            'ativo',
+       
         ]
         widgets = {
-            'texto_usuario': forms.TextInput(attrs={'class': 'form-control'}),
-            'tipo_comparacao': forms.Select(attrs={'class': 'form-select'}),
-            'contexto': forms.TextInput(attrs={'class': 'form-control'}),
-            'requisicao': forms.Select(attrs={'class': 'form-select'}),
-            'novo_contexto': forms.TextInput(attrs={'class': 'form-control'}),
-            'ordem': forms.NumberInput(attrs={'class': 'form-control'}),
+            'id_menu': forms.TextInput(attrs={'class': 'form-control'}),
+            'texto': forms.Textarea(attrs={'rows': 12, 'class': 'form-control'}),
+            'opcao_usuario': forms.TextInput(attrs={'class': 'form-control'}),
+            'proximo': forms.TextInput(attrs={'class': 'form-control'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+  
         }
 
 
 
 
-class FonteDeDadosForm(forms.ModelForm):
+class RespostaAutomaticaForm(forms.ModelForm):
     class Meta:
-        model = FonteDeDados
-        fields = '__all__'
+        model = RespostaAutomatica
+        fields = ['palavra_chave', 'pergunta_sequencial', 'resposta', 'variaveis_disponiveis', 'id_exemplo', 'ativo']
+        widgets = {
+            'resposta': forms.Textarea(attrs={'class': 'form-control', 'rows': 12}),
+            'palavra_chave': forms.TextInput(attrs={'class': 'form-control'}),
+            'pergunta_sequencial': forms.TextInput(attrs={'class': 'form-control'}),
+            'variaveis_disponiveis': forms.Textarea(attrs={'class': 'form-control','rows':5}),
+            'id_exemplo': forms.TextInput(attrs={'class': 'form-control'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
 
 
 from core.models import RequisicaoAPI

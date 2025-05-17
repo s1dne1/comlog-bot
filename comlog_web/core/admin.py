@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RespostaAutomatica, IntegracaoCargaPontual, InscricaoNotificacao
+from .models import RespostaAutomatica, IntegracaoCargaPontual, InscricaoNotificacao,ChegadaMotorista
 from .models import HistoricoMensagem, MenuBot, FonteDeDados,RequisicaoAPI,VariavelDisponivel,RegraAutomatica,AcaoAutomatizada
 from import_export.admin import ExportMixin, ImportExportModelAdmin
 from django.contrib import messages
@@ -13,6 +13,7 @@ admin.site.register(HistoricoMensagem)
 admin.site.register(VariavelDisponivel)     
 # admin.site.register(RegraAutomatica)  
 admin.site.register(InscricaoNotificacao)
+admin.site.register(ChegadaMotorista)
 
 
 

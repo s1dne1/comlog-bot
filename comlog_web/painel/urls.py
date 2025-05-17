@@ -1,21 +1,22 @@
 # painel/urls.py
 from django.urls import path
 from . import views
-
 app_name = 'painel'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('regras/', views.regras, name='tela_regras'),
-    path('regras/nova/', views.nova_regra, name='nova_regra'),
-    path('regras/editar/<int:pk>/', views.editar_regra, name='editar_regra'),
-    path('regras/excluir/<int:pk>/', views.excluir_regra, name='excluir_regra'),
+    path('config/', views.config, name='config'),
+    path('home/', views.home, name='home'),
+    path('menu/', views.listar_menus, name='tela_menu'),
+    path('menu/novo/', views.novo_menu, name='novo_menu'),
+    path('menu/editar/<int:pk>/', views.editar_menu, name='editar_menu'),
+    path('menu/excluir/<int:pk>/', views.excluir_menu, name='excluir_menu'),
 
     # URLs para Fonte API (já implementadas)
-    path('fontes/', views.fonte_api_list, name='fonte_api_list'),
-    path('fontes/nova/', views.fonte_api_form, name='fonte_api_form'),
-    path('fontes/editar/<int:pk>/', views.editar_fonte_api, name='editar_fonte_api'),
-    path('fontes/excluir/<int:pk>/', views.excluir_regra, name='excluir_fonte_api'),
+    path('resposta_automatica/', views.resposta_automatica_list, name='resposta_automatica_list'),
+    path('resposta_automatica/nova/', views.resposta_automatica_form, name='resposta_automatica_form'),
+    path('resposta_automatica/editar/<int:pk>/', views.editar_resposta_automatica, name='editar_resposta_automatica'),
+    path('resposta_automatica/excluir/<int:pk>/', views.excluir_resposta_automatica, name='excluir_resposta_automatica'),
     
 
     # URLs para Requisições (já implementadas)
@@ -26,7 +27,12 @@ urlpatterns = [
 
 
 
-     path('requisicoes/<int:pk>/variaveis/', views.capturar_variaveis, name='capturar_variaveis'),
+    path('requisicoes/<int:pk>/variaveis/', views.capturar_variaveis, name='capturar_variaveis'),
+    path('chegadas/', views.chegadas, name='chegadas'),
+
+
+     
+      
 
 
 
