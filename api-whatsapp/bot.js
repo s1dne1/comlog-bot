@@ -17,11 +17,11 @@ const ultimaMensagemUsuario = new Map(); // Armazena a última mensagem enviada 
 const inscricaoPendente = new Map(); // Armazena agendamento que o usuário acabou de consultar
 
 // Localização da portaria 
-//const PORTARIA = { lat: -23.9865964, lng: -48.9161002};
-const PORTARIA = { lat: -23.532673599176753, lng: -47.49531101866294};
+const PORTARIA = { lat: -23.9865964, lng: -48.9161002};
+//const PORTARIA = { lat: -23.532673599176753, lng: -47.49531101866294};
 
 
-const RAIO_PERMITIDO_KM = 0.3;
+const RAIO_PERMITIDO_KM = 1.0;
 
 function calcularDistancia(lat1, lon1, lat2, lon2) {
   const R = 6371; // km
@@ -85,10 +85,9 @@ const MENSAGENS = {
     const contexto = contextoUsuario.get(numero);
     
 
-    console.log(`[DEBUG] Contexto atual de ${numero}:`, contextoUsuario.get(numero));
+    console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD001');
   
-    const numeroPermitido = '5515997836336@c.us';
-    if (message.from !== numeroPermitido) return;
+
   
     console.log(`[${new Date().toLocaleTimeString()}] 📩 ${numero}: ${texto}`);
   
@@ -108,6 +107,8 @@ const MENSAGENS = {
         mensagem_enviada: menu.data.texto
       });
       return;
+      
+
     }
 
     //Trecho para recurso de avisar que motorista chegou na planta.
@@ -115,6 +116,7 @@ const MENSAGENS = {
 
     
     if (contexto === 'acao:avisar_chegada') {
+      console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD002');
       const agendamentoId = texto.match(/\d+/)?.[0];
       contextoUsuario.delete(numero);
     
@@ -134,6 +136,7 @@ const MENSAGENS = {
           inscricaoPendente.set(numero, agendamentoId);
           await client.sendText(numero, "📍 Por favor, envie sua localização para confirmar que você chegou à planta.");
           await registrarHistorico(numero, texto, "Solicitação de localização enviada.");
+          return; // para teste 02 - colocado por mim para tentar tirar erro de duas msgs...
         }
       } catch (err) {
         await client.sendText(numero, '❌ Não foi possível consultar o agendamento. Verifique o número e tente novamente.');
@@ -143,6 +146,7 @@ const MENSAGENS = {
     }
     
     if (contexto === 'aguardando_localizacao_avisar_chegada' && message.type === 'location') {
+      console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD003');
       const lat = message.lat;
       const lng = message.lng;
       const agendamentoId = inscricaoPendente.get(numero);
@@ -187,6 +191,7 @@ const MENSAGENS = {
 
 
     if (contexto === 'acao:resposta_automatica') {
+      console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD004');
       contextoUsuario.delete(numero);
       const respAuto = await axios.get('http://127.0.0.1:8001/api/resposta/', {
         params: { q: texto }
@@ -203,6 +208,7 @@ const MENSAGENS = {
 
     // Fluxo de agendamento (prioridade antes de menus)
     if (contexto === 'acao:agendamento') {
+      console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD005');
       contextoUsuario.delete(numero);
       const id = texto.match(/\d+/)?.[0];
       if (!id) {
@@ -223,6 +229,7 @@ const MENSAGENS = {
     }
 
     if (contexto === 'espera_confirmacao_notificacao') {
+      console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD006');
       const agendamentoId = inscricaoPendente.get(numero);
       inscricaoPendente.delete(numero);
     
@@ -253,6 +260,7 @@ const MENSAGENS = {
   
     // Navegação entre menus dinâmicos
     if (contexto && contexto.startsWith('menu:')) {
+      console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD007');
       const menu_atual = contexto.split(':')[1];
       try {
         const resp = await axios.get('http://127.0.0.1:8001/api/menu/', {
@@ -279,6 +287,7 @@ const MENSAGENS = {
 
   
           if (acao === 'chamada_api_agendamento') {
+            console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD008');
             contextoUsuario.set(numero, 'acao:agendamento');
             
             await client.sendText(numero, MENSAGENS.msg_agendamento);
@@ -296,6 +305,7 @@ const MENSAGENS = {
 
 
           if (acao === 'resposta_automatica') {
+            console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD009');
             // Usa o próprio texto (ex: "2") como chave
             try {
               const resposta = await axios.get('http://127.0.0.1:8001/api/resposta/', {
@@ -315,6 +325,7 @@ const MENSAGENS = {
           
   
           if (acao === 'atendimento') {
+            console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD010');
             contextoUsuario.delete(numero);
             await client.sendText(numero, MENSAGENS.msg_atendimento);
             await axios.post('http://127.0.0.1:8001/api/historico/', {
@@ -325,6 +336,7 @@ const MENSAGENS = {
             return;
           }
         } else {
+          console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD011');
           const proxMenu = await axios.get('http://127.0.0.1:8001/api/menu-texto/', {
             params: { id_menu: proximo }
           });
@@ -351,6 +363,7 @@ const MENSAGENS = {
 
         // Consulta resposta automática no backend (com regra)
         try {
+          console.log(`[DEBUG] Contexto atual de ${numero}:`, contexto,texto,'COD012');
           const respAuto = await axios.get('http://127.0.0.1:8001/api/resposta/', {
             params: { q: texto }
           });
@@ -362,19 +375,43 @@ const MENSAGENS = {
               mensagem_recebida: texto,
               mensagem_enviada: respAuto.data.resposta
             });
+            contextoUsuario.set(numero, respAuto.data.contexto); // Add por mim... teste contexto nas msg automatica
             return;
+            
           }
         } catch (err) {
           console.error('Erro ao consultar resposta automática:', err.message);
         }
   
     // Fallback final — sugere o menu ao usuário
-    await client.sendText(numero, '🤖 Não entendi sua mensagem. Deseja ver o menu? Digite *menu*.');
+    
+    const textosaudacao = ["oi", "ola", "olá", "bom dia", "boa noite", "boa tarde"];
+    const horaAtual = new Date().getHours();
+    
+    let saudacao = "";
+    if (horaAtual < 12) {
+      saudacao = "🌞 Bom dia!";
+    } else if (horaAtual < 18) {
+      saudacao = "🌤️ Boa tarde!";
+    } else {
+      saudacao = "🌙 Boa noite!";
+    }
+    
+    let mensagemResposta = '🤖 Não entendi sua mensagem. Deseja ver o menu? Digite *menu*.';
+    
+    if (textosaudacao.includes(texto)) {
+      mensagemResposta = `${saudacao} Para iniciar Digite *menu* para ver as opções.`;
+    }
+    
+    await client.sendText(numero, mensagemResposta);
+    
     await axios.post('http://127.0.0.1:8001/api/historico/', {
       numero,
       mensagem_recebida: texto,
-      mensagem_enviada: '🤖 Não entendi sua mensagem. Deseja ver o menu? Digite *menu*.'
+      mensagem_enviada: mensagemResposta
     });
+    
+
   });
   
 }
